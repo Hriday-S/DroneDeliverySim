@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsLineItem, QGraphicsItemG
 from DroneSim import DroneSim
 from DroneSimGUI import DroneSimGUI
 from configs import CROP_CODE, CROP_NAME, GRID_SIZE, GRID_RES, NUM_DRONES, NUM_CUSTOMERS, BASE_LOC, COALITION_PERCENT
-
+from utils import random_grid_pos
 
 def fetch_cdl():
     url = "https://nassgeodata.gmu.edu/nass_data_cache/CDL_2024_clip_20250619203210_1734829252.zip"
@@ -62,14 +62,14 @@ def generate_crop_grid(memfile, crop_code):
         if num_selected == 0:
             raise ValueError("No fields selected for coalition. Adjust COALITION_PERCENT or verify CDL data.")
         selected_indices = farm_indices[np.random.choice(len(farm_indices), num_selected, replace=False)]
+
         new_label_grid = np.zeros_like(label_grid)
         for y, x in selected_indices:
             new_label_grid[y, x] = True
 
         return new_label_grid, crop_count_grid
 
-def random_grid_pos(n):
-    return np.random.uniform(0, GRID_SIZE, size=(n, 2))
+
 
 def main():
     print("Fetching and processing CDL data...")
@@ -86,7 +86,7 @@ def main():
                     i * cell_size + cell_size / 2
                 ])
     app = QtWidgets.QApplication(sys.argv)
-    sim = DroneSim(NUM_DRONES, NUM_CUSTOMERS, field_coords)
+    sim = DroneSim(NUM_DRONES, NUM_CUSTOMERS, field_coords, label_grid)
     gui = DroneSimGUI(label_grid, field_counts, sim)
     gui.show()
     sim.timer.start(50)
