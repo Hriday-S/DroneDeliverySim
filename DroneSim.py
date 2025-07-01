@@ -6,14 +6,15 @@ from PyQt5.QtGui import QBrush, QPen, QColor
 import pyqtgraph as pg
 import math
 from configs import CROP_CODE, CROP_NAME, GRID_SIZE, GRID_RES, NUM_DRONES, NUM_CUSTOMERS, BASE_LOC, COALITION_PERCENT
+from utils import random_grid_pos, random_customer_pos
 
-def random_grid_pos(n):
-    return np.random.uniform(0, GRID_SIZE, size=(n, 2))
+
 class DroneSim(QtCore.QObject):
-    def __init__(self, num_drones, num_customers, field_coords):
+    def __init__(self, num_drones, num_customers, field_coords, label_grid):
         super().__init__()
         self.drone_pos = np.array([BASE_LOC.copy() for i in range(num_drones)])
-        self.customer_pos = random_grid_pos(num_customers)
+        self.label_grid = label_grid
+        self.customer_pos = random_customer_pos(num_customers, label_grid)
         self.num_drones = num_drones
         self.num_customers = num_customers
         self.field_coords = np.array(field_coords)
@@ -39,7 +40,7 @@ class DroneSim(QtCore.QObject):
         drone_locs = [BASE_LOC.copy() for i in range(self.num_drones)]
 
         while unassigned:
-            #equalitious assign
+            #assign by equal counts
             for d in range(self.num_drones):
                 if not unassigned:
                     break
