@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsLineItem, QGraphicsItemG
 from PyQt5.QtGui import QBrush, QPen, QColor
 import pyqtgraph as pg
 import math
-from configs import CROP_CODE, CROP_NAME, GRID_SIZE, GRID_RES, NUM_DRONES, NUM_CUSTOMERS, BASE_LOC, COALITION_PERCENT
+from configs import CROP_CODE, CROP_NAME, GRID_SIZE, GRID_RES, NUM_DRONES, NUM_CUSTOMERS, BASE_LOC, COALITION_PERCENT, DRONE_SPEED
 from utils import random_grid_pos, random_customer_pos
 
 
@@ -30,30 +30,32 @@ class DroneSim(QtCore.QObject):
         self.drone_targets = [None] * self.num_drones
         self.drone_route_idx = [0] * self.num_drones
         self.delivered = [False] * self.num_customers
+        self.observers = []  
         self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.step)
-        self.observers = []
+        self.timer.timeout.connect(lambda: self.step(DRONE_SPEED))
+
 
     def assign_customers(self):
         unassigned = set(range(self.num_customers))
-        assign = [[] for i in range(self.num_drones)]
-        drone_locs = [BASE_LOC.copy() for i in range(self.num_drones)]
+        assign = [[] for _ in range(self.num_drones)]
+        drone_locs = [BASE_LOC.copy() for _ in range(self.num_drones)]
 
         while unassigned:
-            #assign by equal counts
             for d in range(self.num_drones):
                 if not unassigned:
                     break
-                cust_idx = min(
-                    unassigned,
-                    key=lambda c: math.hypot(*(self.customer_pos[c] - drone_locs[d]))
-                )
+
+                def total_path_len(c):
+                    farm = self.pickup_points[c]
+                    return np.linalg.norm(drone_locs[d] - farm) + np.linalg.norm(farm - self.customer_pos[c])
+
+                cust_idx = min(unassigned, key=total_path_len)
                 assign[d].append(cust_idx)
                 drone_locs[d] = self.customer_pos[cust_idx].copy()
                 unassigned.remove(cust_idx)
+
         return assign
-    def step(self):
-        speed = 1
+    def step(self, speed):
         for i in range(self.num_drones):
             if not self.assignments[i]:
                 continue
