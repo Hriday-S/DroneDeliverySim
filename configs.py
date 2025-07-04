@@ -5,10 +5,10 @@ config = {
     'CROP_NAME': "Soybeans",
     'GRID_SIZE': 100,
     'GRID_RES': 30,
-    'NUM_DRONES': 2,
+    'NUM_DRONES': 6,
     'NUM_CUSTOMERS': 90,
     'COALITION_PERCENT': 0.03,
-    'DRONE_SPEED': 1,
+    'DRONE_SPEED': 5,
 }
 
 # Constants post over-ride
