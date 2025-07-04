@@ -8,3 +8,4 @@ NUM_DRONES = 2
 NUM_CUSTOMERS = 90
 BASE_LOC = np.array([GRID_SIZE / 2, GRID_SIZE / 2])
 COALITION_PERCENT = 0.03  # 10% of farmland is in the coalition
+DRONE_SPEED = 1
