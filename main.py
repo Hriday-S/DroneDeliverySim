@@ -5,14 +5,15 @@ import rasterio
 from io import BytesIO
 from zipfile import ZipFile
 from rasterio.io import MemoryFile
-from PyQt5 import QtWidgets, QtCore, QtGui
-from PyQt5.QtCore import QRectF
+from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsLineItem, QGraphicsItemGroup
 from DroneSim import DroneSim
 from DroneSimGUI import DroneSimGUI
 from utils import random_grid_pos
 import argparse
 import configs
+import datetime
+import time 
 
 def fetch_cdl():
     url = "https://nassgeodata.gmu.edu/nass_data_cache/CDL_2024_clip_20250619203210_1734829252.zip"
@@ -87,7 +88,7 @@ def parse_args():
     return parser.parse_args()
 
 def override_configs_from_args(args):
-    cfg = configs.config  # shortcut
+    cfg = configs.config
 
     if args.crop_code is not None: cfg['CROP_CODE'] = args.crop_code
     if args.crop_name is not None: cfg['CROP_NAME'] = args.crop_name
@@ -98,7 +99,6 @@ def override_configs_from_args(args):
     if args.coalition_percent is not None: cfg['COALITION_PERCENT'] = args.coalition_percent
     if args.drone_speed is not None: cfg['DRONE_SPEED'] = args.drone_speed
 
-    # Now override the constants module-level
     configs.CROP_CODE = cfg['CROP_CODE']
     configs.CROP_NAME = cfg['CROP_NAME']
     configs.GRID_SIZE = cfg['GRID_SIZE']
@@ -111,6 +111,7 @@ def override_configs_from_args(args):
 
 
 def main():
+
     args = parse_args()
     override_configs_from_args(args)
 
@@ -129,7 +130,10 @@ def main():
         GRID_RES,
         COALITION_PERCENT
     )
-    print("Grid ready.")
+    start_time = time.time()
+    start_dt = datetime.datetime.now()
+    print(f"Grid ready at {start_dt.strftime('%Y-%m-%d %H:%M:%S')}")
+
 
     field_coords = []
     cell_size = GRID_SIZE / GRID_RES
@@ -146,8 +150,53 @@ def main():
     gui = DroneSimGUI(label_grid, field_counts, sim)
     gui.show()
     sim.timer.start(50)
-    sys.exit(app.exec_())
 
+    def sim_finished():
+        sim.timer.stop()
+        gui.close()
+        app.quit()
+
+        # Logging after sim closes
+        end_time = time.time()
+        duration = end_time - start_time
+        end_dt = datetime.datetime.now()
+
+        log_lines = [
+            f"=== Simulation Completed ===",
+            f"Start Time: {start_dt.strftime('%Y-%m-%d %H:%M:%S')}",
+            f"End Time:   {end_dt.strftime('%Y-%m-%d %H:%M:%S')}",
+            f"Duration:   {duration:.2f} seconds",
+            "",
+            "Parameters:",
+            f"  Crop:              {configs.CROP_NAME} (code {configs.CROP_CODE})",
+            f"  Grid Size:         {configs.GRID_SIZE}",
+            f"  Grid Resolution:   {configs.GRID_RES} x {configs.GRID_RES}",
+            f"  Number of Drones:  {configs.NUM_DRONES}",
+            f"  Number of Customers: {configs.NUM_CUSTOMERS}",
+            f"  Coalition %:       {configs.COALITION_PERCENT:.2%}",
+            f"  Drone Speed:       {configs.DRONE_SPEED}",
+            "",
+            "Delivery Summary:",
+            f"  Total Deliveries:  {len(sim.delivered)}",
+            f"  Successful:        {sum(sim.delivered)}",
+            f"  Failed:            {len(sim.delivered) - sum(sim.delivered)}",
+            "",
+            "-" * 40,
+            ""
+        ]
+
+        with open("log.txt", "a") as f:
+            f.write("\n".join(log_lines))
+
+
+    sim.on_finish = sim_finished
+
+    exit_code = app.exec_()
+
+    with open("log.txt", "a") as file:
+        file.write("Simulation completed and GUI closed.\n")
+
+    sys.exit(exit_code)
 
 
 if __name__ == '__main__':
