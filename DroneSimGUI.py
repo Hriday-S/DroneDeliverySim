@@ -33,6 +33,7 @@ class DroneSimGUI(QtWidgets.QMainWindow):
         self.tick_label.setStyleSheet("background-color: rgba(255,255,255,180); padding: 2px;")
         self.tick_label.raise_()
 
+        
         self.drone_colors = [(255, 0, 0), (0, 0, 255), (0, 200, 0), (200, 0, 200), (255, 128, 0)]
         self.grid_items = []
         self.customer_boxes = []
