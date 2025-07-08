@@ -6,7 +6,7 @@ from PyQt5.QtGui import QBrush, QPen, QColor, QPolygonF
 import pyqtgraph as pg
 import math
 from DroneSim import DroneSim
-from configs import CROP_CODE, CROP_NAME, GRID_SIZE, GRID_RES, NUM_DRONES, NUM_CUSTOMERS, BASE_LOC, COALITION_PERCENT
+from configs import GRID_SIZE, GRID_RES, NUM_DRONES, NUM_CUSTOMERS, BASE_LOC, COALITION_PERCENT
 
 class DroneSimGUI(QtWidgets.QMainWindow):
     def __init__(self, label_grid, field_counts, sim):

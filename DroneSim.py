@@ -1,6 +1,6 @@
 import numpy as np
 from PyQt5 import QtCore
-from configs import CROP_CODE, CROP_NAME, GRID_SIZE, GRID_RES, NUM_DRONES, NUM_CUSTOMERS, BASE_LOC, COALITION_PERCENT, DRONE_SPEED
+from configs import GRID_SIZE, GRID_RES, NUM_DRONES, NUM_CUSTOMERS, BASE_LOC, COALITION_PERCENT, DRONE_SPEED
 from utils import random_customer_pos
 
 
