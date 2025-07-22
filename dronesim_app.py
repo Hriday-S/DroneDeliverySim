@@ -15,10 +15,8 @@ if "running" not in st.session_state:
 def generate_farm_grid_and_customers(grid_res, farm_percent, num_customers):
     total_cells = grid_res * grid_res
     max_farm_cells = total_cells - num_customers
-
     if max_farm_cells <= 0:
         raise ValueError("Too many customers or grid too small to allocate non-farm cells.")
-
     farm_percent = min(farm_percent, max_farm_cells / total_cells)
 
     label_grid = np.zeros((grid_res, grid_res), dtype=bool)
@@ -34,7 +32,6 @@ def generate_farm_grid_and_customers(grid_res, farm_percent, num_customers):
     customer_pos = np.array([
         [(j + 0.5) * cell_size, (i + 0.5) * cell_size] for i, j in chosen
     ])
-
     return label_grid, customer_pos
 
 # Sim class
@@ -66,7 +63,6 @@ class DroneSim:
         unassigned = set(range(len(self.customer_pos)))
         assign = [[] for _ in self.drone_pos]
         drone_locs = [BASE_LOC.copy() for _ in self.drone_pos]
-
         while unassigned:
             for d in range(len(assign)):
                 if not unassigned:
@@ -98,21 +94,17 @@ class DroneSim:
                         self.delivered[cust_idx] = True
                 else:
                     self.drone_pos[i] += direction / dist * speed
-
         self._finished = all(self.delivered)
         return self._finished
 
-# UI + sim startup
+# UI setup
 st.set_page_config(page_title="DroneSim Visualizer", layout="wide")
 st.title("Drone Delivery Visualizer")
 
-# Init grid and customers
+# Grid + Sim init
 label_grid, customer_pos = generate_farm_grid_and_customers(GRID_RES, COALITION_PERCENT, NUM_CUSTOMERS)
-
-# Init sim
 if st.session_state.sim is None:
     st.session_state.sim = DroneSim(NUM_DRONES, customer_pos, label_grid)
-
 sim = st.session_state.sim
 
 # Controls
@@ -124,12 +116,25 @@ with col2:
     if st.button("Stop Simulation"):
         st.session_state.running = False
 
-# Live plot loop
+# Plot
+fig, ax = plt.subplots(figsize=(6, 6))
+ax.set_xlim(0, GRID_SIZE)
+ax.set_ylim(0, GRID_SIZE)
+ax.set_aspect('equal')
+for i in range(GRID_RES):
+    for j in range(GRID_RES):
+        color = 'green' if label_grid[i, j] else 'white'
+        ax.add_patch(patches.Rectangle(
+            (j * GRID_SIZE / GRID_RES, i * GRID_SIZE / GRID_RES),
+            GRID_SIZE / GRID_RES, GRID_SIZE / GRID_RES,
+            facecolor=color, edgecolor='gray', linewidth=0.5
+        ))
+
 plot_area = st.empty()
 while st.session_state.running and not sim._finished:
     sim.step(DRONE_SPEED)
 
-    fig, ax = plt.subplots(figsize=(6, 6))
+    ax.clear()
     ax.set_xlim(0, GRID_SIZE)
     ax.set_ylim(0, GRID_SIZE)
     ax.set_aspect('equal')
@@ -149,8 +154,18 @@ while st.session_state.running and not sim._finished:
         color = 'lightblue' if delivered else 'blue'
         ax.plot(pos[0], pos[1], 'o', color=color, markersize=6)
 
-    for x, y in sim.drone_pos:
-        ax.plot(x, y, 'ko', markersize=6)
+    for i, (x, y) in enumerate(sim.drone_pos):
+        # Yellow if heading to pickup, black if heading to deliver
+        if sim.assignments[i]:
+            cust_idx = sim.assignments[i][0]
+            route_idx = sim.drone_route_idx[i]
+            if route_idx == 0:
+                drone_color = 'yellow'
+            else:
+                drone_color = 'black'
+        else:
+            drone_color = 'gray'
+        ax.plot(x, y, 'o', color=drone_color, markersize=6)
 
     ax.set_title("Live Drone Routes")
     plot_area.pyplot(fig)
@@ -159,4 +174,4 @@ while st.session_state.running and not sim._finished:
         st.success("All deliveries completed!")
         st.session_state.running = False
 
-    time.sleep(0.25)
+    time.sleep(0.01)
