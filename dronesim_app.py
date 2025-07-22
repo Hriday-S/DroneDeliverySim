@@ -5,12 +5,13 @@ import matplotlib.patches as patches
 import time
 from configs import USE_RANDOM_GRID, CROP_CODE, GRID_SIZE, GRID_RES, NUM_DRONES, NUM_CUSTOMERS, COALITION_PERCENT, DRONE_SPEED, BASE_LOC
 
+# Session state init
 if "sim" not in st.session_state:
     st.session_state.sim = None
 if "running" not in st.session_state:
     st.session_state.running = False
 
-
+# Farm + customer generator
 def generate_farm_grid_and_customers(grid_res, farm_percent, num_customers):
     total_cells = grid_res * grid_res
     max_farm_cells = total_cells - num_customers
@@ -18,8 +19,7 @@ def generate_farm_grid_and_customers(grid_res, farm_percent, num_customers):
     if max_farm_cells <= 0:
         raise ValueError("Too many customers or grid too small to allocate non-farm cells.")
 
-    max_farm_percent = max_farm_cells / total_cells
-    farm_percent = min(farm_percent, max_farm_percent)
+    farm_percent = min(farm_percent, max_farm_cells / total_cells)
 
     label_grid = np.zeros((grid_res, grid_res), dtype=bool)
     num_farm = int(total_cells * farm_percent)
@@ -37,22 +37,20 @@ def generate_farm_grid_and_customers(grid_res, farm_percent, num_customers):
 
     return label_grid, customer_pos
 
-
-
-# ------------- SIM CLASS -------------
+# Sim class
 class DroneSim:
-    def __init__(self, num_drones, num_customers, label_grid):
+    def __init__(self, num_drones, customer_pos, label_grid):
         self.label_grid = label_grid
+        self.customer_pos = customer_pos
         self.cell_size = GRID_SIZE / GRID_RES
         self.drone_pos = np.array([BASE_LOC.copy() for _ in range(num_drones)])
-        self.customer_pos = random_customer_pos(num_customers, label_grid)
         self.pickup_points = np.array([
             self.closest_farm(c) for c in self.customer_pos
         ])
-        self.routes = [[self.pickup_points[i], self.customer_pos[i]] for i in range(num_customers)]
+        self.routes = [[self.pickup_points[i], self.customer_pos[i]] for i in range(len(self.customer_pos))]
         self.assignments = self.assign_customers()
         self.drone_route_idx = [0] * num_drones
-        self.delivered = [False] * num_customers
+        self.delivered = [False] * len(self.customer_pos)
         self._finished = False
 
     def closest_farm(self, customer_pos):
@@ -104,21 +102,20 @@ class DroneSim:
         self._finished = all(self.delivered)
         return self._finished
 
-
-# ------------- UI + SIM START -------------
+# UI + sim startup
 st.set_page_config(page_title="DroneSim Visualizer", layout="wide")
 st.title("Drone Delivery Visualizer")
 
-# Load grid
-label_grid = generate_random_farm_grid(GRID_RES, COALITION_PERCENT)
+# Init grid and customers
+label_grid, customer_pos = generate_farm_grid_and_customers(GRID_RES, COALITION_PERCENT, NUM_CUSTOMERS)
 
-# Init sim if needed
+# Init sim
 if st.session_state.sim is None:
-    st.session_state.sim = DroneSim(NUM_DRONES, NUM_CUSTOMERS, label_grid)
+    st.session_state.sim = DroneSim(NUM_DRONES, customer_pos, label_grid)
 
 sim = st.session_state.sim
 
-# Buttons
+# Controls
 col1, col2 = st.columns(2)
 with col1:
     if st.button("Start Simulation") and not st.session_state.running:
@@ -127,7 +124,7 @@ with col2:
     if st.button("Stop Simulation"):
         st.session_state.running = False
 
-# Live Plot Loop
+# Live plot loop
 plot_area = st.empty()
 while st.session_state.running and not sim._finished:
     sim.step(DRONE_SPEED)
@@ -137,7 +134,6 @@ while st.session_state.running and not sim._finished:
     ax.set_ylim(0, GRID_SIZE)
     ax.set_aspect('equal')
 
-    # Grid background
     for i in range(GRID_RES):
         for j in range(GRID_RES):
             color = 'green' if label_grid[i, j] else 'white'
@@ -147,15 +143,12 @@ while st.session_state.running and not sim._finished:
                 facecolor=color, edgecolor='gray', linewidth=0.5
             ))
 
-    # Base
     ax.scatter(BASE_LOC[0], BASE_LOC[1], s=80, c='orange', edgecolors='black', label='Base')
 
-    # Customers
     for pos, delivered in zip(sim.customer_pos, sim.delivered):
         color = 'lightblue' if delivered else 'blue'
         ax.plot(pos[0], pos[1], 'o', color=color, markersize=6)
 
-    # Drones
     for x, y in sim.drone_pos:
         ax.plot(x, y, 'ko', markersize=6)
 
