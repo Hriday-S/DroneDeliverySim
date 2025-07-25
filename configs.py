@@ -2,7 +2,7 @@ import numpy as np
 USE_RANDOM_GRID = False
 CROP_CODE = 5 # Not to be used
 GRID_SIZE = 20
-GRID_RES = 20   
+GRID_RES = 40  
 NUM_DRONES = 3
 NUM_CUSTOMERS = 10
 COALITION_PERCENT = 0.2
