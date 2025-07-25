@@ -5,8 +5,8 @@ import matplotlib.patches as patches
 import streamlit as st
 from configs import USE_RANDOM_GRID, GRID_SIZE, GRID_RES as DEFAULT_GRID_RES, NUM_DRONES, NUM_CUSTOMERS, DRONE_SPEED, BASE_LOC, COALITION_PERCENT
 
-st.set_page_config(page_title="DroneSim, sample link: https://nassgeodata.gmu.edu/nass_data_cache/byfips/CDL_2024_17019.zip")
-
+st.set_page_config(page_title="DroneSim")
+st.write("Sample data: " + "https://nassgeodata.gmu.edu/nass_data_cache/byfips/CDL_2024_17019.zip")
 # --- User-adjustable resolution input ---
 res = st.number_input(
     "Grid resolution (cells per side)",
