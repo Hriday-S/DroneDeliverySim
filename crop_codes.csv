@@ -1,0 +1,73 @@
+code,name,color
+1,Corn,#FFFF64
+2,Cotton,#F0F0F0
+3,Rice,#A6CEE3
+4,Sorghum,#FB9A99
+5,Soybeans,#33A02C
+6,Sunflower,#FFD92F
+10,Peanuts,#FF7F00
+11,Tobacco,#B15928
+12,Sweet Corn,#E31A1C
+13,Popcorn,#FDBF6F
+14,Mint,#CAB2D6
+21,Barley,#6A3D9A
+22,Durum Wheat,#FEB24C
+23,Spring Wheat,#FED976
+24,Winter Wheat,#FFEDA0
+25,Other Small Grains,#B2DF8A
+26,Double Crop WinWht/Soybeans,#98DF8A
+27,Rye,#98DF8A
+28,Oats,#98DF8A
+29,Millet,#98DF8A
+30,Speltz,#D62728
+31,Canola,#D62728
+32,Flaxseed,#D62728
+33,Safflower,#D62728
+34,Rape Seed,#FF9896
+35,Mustard,#FF9896
+36,Alfalfa,#FF9896
+37,Other Hay/Non Alfalfa,#FF9896
+38,Camelina,#9467BD
+39,Buckwheat,#9467BD
+41,Sugarbeets,#9467BD
+42,Dry Beans,#9467BD
+43,Potatoes,#C5B0D5
+44,Other Crops,#C5B0D5
+45,Sugarcane,#C5B0D5
+46,Sweet Potatoes,#C5B0D5
+47,Misc Vegs & Fruits,#8C564B
+48,Watermelons,#8C564B
+49,Onions,#8C564B
+50,Cucumbers,#8C564B
+51,Chick Peas,#E377C2
+52,Lentils,#E377C2
+53,Peas,#E377C2
+54,Tomatoes,#E377C2
+55,Caneberries,#7F7F7F
+56,Hops,#7F7F7F
+57,Herbs,#7F7F7F
+58,Clover/Wildflowers,#7F7F7F
+59,Sod/Grass Seed,#BCBD22
+60,Switchgrass,#BCBD22
+61,Fallow/Idle Cropland,#BCBD22
+63,Forest,#BCBD22
+64,Shrubland,#17BECF
+65,Barren,#17BECF
+66,Cherries,#17BECF
+67,Peaches,#17BECF
+68,Apples,#17BECF
+69,Grapes,#9EDAe5
+70,Christmas Trees,#9EDAe5
+81,Clouds/No Data,#9EDAe5
+82,Developed,#9EDAe5
+83,Water,#9EDAe5
+87,Wetlands,#9EDAe5
+88,Nonag/Undefined,#9467BD
+92,Aquaculture,#9467BD
+111,Open Water,#9467BD
+112,Perennial Ice/Snow,#9467BD
+121,Developed/Open Space,#FF7F0E
+122,Developed/Low Intensity,#FF7F0E
+123,Developed/Med Intensity,#FF7F0E
+124,Developed/High Intensity,#FF7F0E
+131,Barren Rock,#FF7F0E
