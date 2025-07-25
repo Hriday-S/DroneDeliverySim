@@ -1,6 +1,6 @@
 import numpy as np
 USE_RANDOM_GRID = False
-CROP_CODE = 5
+CROP_CODE = 5 # Not to be used
 GRID_SIZE = 20
 GRID_RES = 20   
 NUM_DRONES = 3
