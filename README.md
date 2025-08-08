@@ -12,7 +12,7 @@ A Streamlit app that processes USDA Cropland Data Layer (CDL) raster data, finds
 - Marks fill (nodata) cells with a fixed value so masking is unambiguous.
 
 ### 2. Grid Aggregation
-- The clipped raster is binned into a `GRID_RES × GRID_RES` grid.
+- The clipped raster is binned into a `GRID_RES x GRID_RES` grid.
 - For each grid cell, counts how many valid pixels match the chosen crop code.
 - Calculates fraction = (matching pixels) / (total valid pixels in the cell).
 
@@ -49,15 +49,18 @@ A Streamlit app that processes USDA Cropland Data Layer (CDL) raster data, finds
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate   # On Windows: .venv\Scripts\activate
+source .venv/bin/activate  # On macOS/Linux
+# .venv\Scripts\activate   # On Windows
 pip install -U pip
 pip install -r requirements.txt
-Run
-bash
-Copy
-Edit
+```
+## Run
+```
 streamlit run app.py
+```
+
 Configurable Parameters (in app.py)
+```
 GRID_RES — grid resolution for both raster aggregation and simulation.
 
 FARM_COUNT — number of farm cells to select.
@@ -69,15 +72,16 @@ NUM_DRONES — number of drones in the sim.
 DRONE_SPEED — movement speed of drones.
 
 DEFAULT_TARGET_CODE — initial crop code.
-
-Performance
+```
+--
+## Performance
 Processing cost grows with raster size and GRID_RES².
 
 100–300 grid resolution is usually fine; 500+ will be slower.
 
 Uses numpy.add.at for vectorized binning and np.argpartition for efficient top-N selection.
-
-Common Errors
+--
+## Common Errors
 Input shapes do not overlap raster — The shapefile and raster don’t intersect; check CRS and file paths.
 
 No classes present — Clip produced only nodata values.
@@ -86,7 +90,15 @@ No farm cells found — Crop too sparse; try a different crop or lower GRID_RES.
 
 No non-farm cells for customers — FARM_COUNT too high; reduce it.
 
-Data Source
+## Data (required, not in repo)
+
+The CDL GeoTIFF is large, so it isn’t tracked here. You must supply it locally.
+
+### Option A — Manual (recommended)
+1. Create a `tif/` folder in the project root.
+2. Download the 2024 CDL GeoTIFF from USDA NASS, for Illinois https://nassgeodata.gmu.edu/nass_data_cache/byfips/CDL_2024_17.zip
+
+## Data Source
 USDA NASS Cropland Data Layer (CDL)
 National Agricultural Statistics Service, U.S. Department of Agriculture
 https://www.nass.usda.gov/Research_and_Science/Cropland/SARS1a.php
