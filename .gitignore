@@ -3,3 +3,4 @@ __pycache__/
 .DS_Store
 
 tif/*.tif
+tif/*.tif
