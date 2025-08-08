@@ -1,81 +1,92 @@
-# DroneSim Visualizer
+# DroneSim — From CDL Raster to Drone Delivery Simulation
 
-A lightweight Streamlit-based simulation for visualizing drone delivery to customers in a gridded farm environment. This tool models the logistics of multi-drone systems operating over agricultural areas, with real-time route planning, pickup point selection, and delivery tracking.
+A Streamlit app that processes USDA Cropland Data Layer (CDL) raster data, finds the top-N most suitable farm cells for a chosen crop, places customers on non-farm cells, and simulates multi-drone delivery routes from a central base.
 
-## 🔧 Features
+---
 
-* Simulates delivery from farm grid cells to customers
-* Real-time drone routing visualization
-* Start/Stop/Reset controls with live animation
-* Dynamic grid generation (random or CDL-based)
-* Adjustable parameters via the UI or `configs.py`
+## How It Works
 
-## 📁 Structure
+### 1. Raster Processing
+- Loads a CDL GeoTIFF for Illinois.
+- Clips to state boundaries using the shapefile (CRS is matched before masking).
+- Marks fill (nodata) cells with a fixed value so masking is unambiguous.
 
-```
-DroneSim/
-├── dronesim_app.py    # Main Streamlit UI and simulation logic
-├── configs.py        # Centralized simulation parameters (defaults)
-├── requirements.txt   # Dependencies
-├── README.md         # Project documentation
-```
+### 2. Grid Aggregation
+- The clipped raster is binned into a `GRID_RES × GRID_RES` grid.
+- For each grid cell, counts how many valid pixels match the chosen crop code.
+- Calculates fraction = (matching pixels) / (total valid pixels in the cell).
 
-## ⚙️ Configuration
+### 3. Selecting Farm Cells
+- Only considers cells where fraction > 0.
+- Picks the top-N by fraction, limited so there’s still space for customer placement.
+- If fewer than N candidates exist, the number is reduced automatically.
 
-Defaults are defined in `configs.py`, but many parameters can be adjusted at runtime via the app controls:
+### 4. Placing Customers
+- Randomly samples non-farm cells for customers.
+- Uses a deterministic RNG seed based on crop code and grid resolution, so placement is stable between runs.
 
-```python
-# configs.py defaults:
-USE_RANDOM_GRID = True
-CROP_CODE = 5               # Default CDL crop code for soybeans
-GRID_SIZE = 50              # Width/height in meters
-GRID_RES = 10               # Default grid resolution (cells per side)
-NUM_DRONES = 3
-NUM_CUSTOMERS = 5           # Default number of customers
-COALITION_PERCENT = 0.4     # % of grid marked as farm
-DRONE_SPEED = 3             # Movement speed per timestep
-BASE_LOC = np.array([25, 25])  # Central base location
-```
+### 5. Base Location
+- Starts at the center of the crop’s bounding box.
+- Snaps to the nearest valid in-state cell.
 
-### Runtime Controls
+### 6. Drone Simulation
+- Each job is “farm → customer.”
+- Assigns jobs to drones using a greedy nearest-available strategy.
+- Drones move at a fixed speed until all deliveries are complete.
 
-* **Grid resolution**: Adjust the number of cells per side (defaults to `GRID_RES` from `configs.py`). Changing this resets the simulation.
-* **Number of customers**: Set how many delivery points to generate (defaults to `NUM_CUSTOMERS` from `configs.py`). Changing this resets the simulation.
-* **Crop type**: Select the CDL crop code for farm cells. Changing this resets the grid and delivery points.
-* **GeoTIFF URL**: Optionally load a real CDL GeoTIFF to generate the farm mask.
+### 7. Visualization
+- Background: light gray in-state, white outside.
+- Farms: crop color from CDL’s DBF or from `crop_codes.csv`.
+- Base: orange circle.
+- Customers: blue (light blue when served).
+- Pickups: red “X.”
+- Drones: black dots.
+- Optional gridlines overlay.
 
-## 🚀 Usage
+---
 
-Install dependencies:
+## Install
 
 ```bash
+python -m venv .venv
+source .venv/bin/activate   # On Windows: .venv\Scripts\activate
+pip install -U pip
 pip install -r requirements.txt
-```
+Run
+bash
+Copy
+Edit
+streamlit run app.py
+Configurable Parameters (in app.py)
+GRID_RES — grid resolution for both raster aggregation and simulation.
 
-Run the app:
+FARM_COUNT — number of farm cells to select.
 
-```bash
-streamlit run dronesim_app.py
-```
+NUM_CUSTOMERS — number of customers to place.
 
-Use the UI sliders and inputs to configure resolution, customer count, and crop type. Then click **Start** to begin the simulation.
+NUM_DRONES — number of drones in the sim.
 
-## 📊 Visualization Legend
+DRONE_SPEED — movement speed of drones.
 
-* **Colored cells**: Crop type (per CDL color map)
-* **Red X**: Pickup points on matching crop cells
-* **Blue dots**: Customer locations
-* **Orange dot**: Base station
-* **Black dots**: Drones en route
+DEFAULT_TARGET_CODE — initial crop code.
 
-## ❗ Notes
+Performance
+Processing cost grows with raster size and GRID_RES².
 
-* Customers are never placed on crop (farm) cells.
-* Simulation automatically resets and updates when key parameters change.
-* Reset the app at any time using the **Reset** button.
+100–300 grid resolution is usually fine; 500+ will be slower.
 
-## 🧠 TODO
+Uses numpy.add.at for vectorized binning and np.argpartition for efficient top-N selection.
 
-* Path optimization (e.g., TSP approximation)
-* Delivery heatmap export / analytics
-* UI controls for drone speed, grid size, etc.
+Common Errors
+Input shapes do not overlap raster — The shapefile and raster don’t intersect; check CRS and file paths.
+
+No classes present — Clip produced only nodata values.
+
+No farm cells found — Crop too sparse; try a different crop or lower GRID_RES.
+
+No non-farm cells for customers — FARM_COUNT too high; reduce it.
+
+Data Source
+USDA NASS Cropland Data Layer (CDL)
+National Agricultural Statistics Service, U.S. Department of Agriculture
+https://www.nass.usda.gov/Research_and_Science/Cropland/SARS1a.php

@@ -1,10 +1,10 @@
 import numpy as np
 USE_RANDOM_GRID = False
 CROP_CODE = 5 # Not to be used
-GRID_SIZE = 20
-GRID_RES = 25  
+GRID_SIZE = 100
+GRID_RES = 50
 NUM_DRONES = 3
 NUM_CUSTOMERS = 10
-COALITION_PERCENT = 0.3
+COALITION_PERCENT = 0.9
 DRONE_SPEED = 1  
-BASE_LOC = (10, 10)  # use integer grid location
+BASE_LOC = (GRID_RES/2, GRID_RES/2)

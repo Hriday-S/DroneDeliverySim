@@ -1,10 +1,4 @@
-log.txt
 venv/
 __pycache__/
 .DS_Store
-*.shp
-*.shx
-*.dbf
-*.prj
-/shapefiles/
-map.py
+
